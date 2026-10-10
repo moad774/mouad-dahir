@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محرر كود HTML المباشر | Éditeur HTML Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* Toolbar */
+    .toolbar {
+      background: #1e293b;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #f43f5e;
+    }
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-copy {
+      background: #10b981;
+      color: white;
+    }
+    .btn-copy:hover {
+      background: #059669;
+    }
+    .btn-view {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .btn-view.active, .btn-view:hover {
+      background: #475569;
+      color: #38bdf8;
+    }
+    .btn-download {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-download:hover {
+      background: #2563eb;
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 65px);
+      overflow: hidden;
+    }
+    .editor-pane {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #334155;
+      background: #1e1e1e;
+    }
+    .pane-header {
+      background: #18181b;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #27272a;
+    }
+    .code-textarea {
+      flex: 1;
+      width: 100%;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 16px;
+      border: none;
+      resize: none;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow-x: auto;
+    }
+    .preview-pane {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      transition: width 0.3s ease;
+    }
+    .preview-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #334155;
+      overflow: hidden;
+      padding: 10px;
+    }
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    .preview-iframe.mobile-view {
+      width: 390px;
+      height: 844px;
+      max-height: 98%;
+      border-radius: 36px;
+      border: 8px solid #0f172a;
+    }
+
+    /* Notification Toast */
+    .toast {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Controls -->
+  <div class="toolbar">
+    <div class="toolbar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 18l6-6-6-6M8 6l-6 6 6 6"></path>
+      </svg>
+      <span>Éditeur HTML & Aperçu en Direct</span>
+    </div>
+
+    <div class="toolbar-actions">
+      <button class="btn btn-view active" id="btn-desktop" title="معاينة شاشة الحاسوب">
+        💻 حاسوب (Desktop)
+      </button>
+      <button class="btn btn-view" id="btn-mobile" title="معاينة شاشة الهاتف">
+        📱 هاتف (Mobile)
+      </button>
+      <button class="btn btn-download" id="btn-download" title="تحميل ملف HTML">
+        💾 تحميل الملف
+      </button>
+      <button class="btn btn-copy" id="btn-copy" title="نسخ الكود بالكامل لاستخدامه في YouCan أو Shopify">
+        📋 نسخ الكود كاملاً (Copier Tout)
+      </button>
+    </div>
+  </div>
+
+  <!-- Workspace: Editor + Live Preview -->
+  <div class="workspace">
+    <!-- Code Editor Pane -->
+    <div class="editor-pane">
+      <div class="pane-header">
+        <span>كود HTML / CSS / JS (قابلة للتعديل المباشر)</span>
+        <span id="char-count">جاهز للتعديل والنسخ</span>
+      </div>
+      <textarea id="html-code" class="code-textarea" spellcheck="false" placeholder="جاري تحميل الكود..."></textarea>
+    </div>
+
+    <!-- Live Preview Pane -->
+    <div class="preview-pane">
+      <div class="pane-header">
+        <span>المعاينة المباشرة (Aperçu en temps réel)</span>
+        <span style="color:#10b981;">● متزامن ومحدث تلقائياً</span>
+      </div>
+      <div class="preview-container">
+        <iframe id="preview-frame" class="preview-iframe" title="Aperçu de la page"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div class="toast" id="toast">✓ تم نسخ كود HTML بالكامل بنجاح إلى الحافظة!</div>
+
+  <script>
+    const textarea = document.getElementById('html-code');
+    const iframe = document.getElementById('preview-frame');
+    const btnDesktop = document.getElementById('btn-desktop');
+    const btnMobile = document.getElementById('btn-mobile');
+    const btnCopy = document.getElementById('btn-copy');
+    const btnDownload = document.getElementById('btn-download');
+    const toast = document.getElementById('toast');
+    const charCount = document.getElementById('char-count');
+
+    // Load initial code from standalone file
+    fetch('youcan-shopify-code.html')
+      .then(res => res.text())
+      .then(code => {
+        textarea.value = code;
+        updatePreview();
+        updateCount();
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+      });
+
+    function updatePreview() {
+      const code = textarea.value;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(code);
+      doc.close();
+    }
+
+    function updateCount() {
+      const len = textarea.value.length;
+      charCount.textContent = (len / 1024).toFixed(1) + ' KB';
+    }
+
+    // Live update on input with debounce
+    let timeout;
+    textarea.addEventListener('input', () => {
+      clearTimeout(timeout);
+      updateCount();
+      timeout = setTimeout(updatePreview, 300);
+    });
+
+    // View toggles
+    btnDesktop.addEventListener('click', () => {
+      iframe.classList.remove('mobile-view');
+      btnDesktop.classList.add('active');
+      btnMobile.classList.remove('active');
+    });
+
+    btnMobile.addEventListener('click', () => {
+      iframe.classList.add('mobile-view');
+      btnMobile.classList.add('active');
+      btnDesktop.classList.remove('active');
+    });
+
+    // Copy to clipboard
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }).catch(err => {
+        // Fallback
+        textarea.select();
+        document.execCommand('copy');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
+    });
+
+    // Download HTML
+    btnDownload.addEventListener('click', () => {
+      const blob = new Blob([textarea.value], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'landing-page-anti-cellulite.html';
+      a.click();
+    });
+  </script>
+</body>
+</html>

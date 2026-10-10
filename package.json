@@ -1,0 +1,18 @@
+{
+  "name": "cellulite-massager-landing",
+  "version": "1.0.0",
+  "description": "صفحة هبوط احترافية عالية التحويل مع لوحة تحكم أدمين لإدارة طلبات الدفع عند الاستلام بالمغرب",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "landing-page",
+    "cod",
+    "ecommerce",
+    "morocco",
+    "admin-dashboard"
+  ],
+  "author": "Mouad Dahir",
+  "license": "MIT"
+}

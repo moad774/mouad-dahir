@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم الطلبات | Admin Dashboard CELLU-CARE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- 1. LOGIN SCREEN OVERLAY -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">🔐</div>
+      <h2>تسجيل الدخول للوحة التحكم</h2>
+      <p>أدخلي بيانات المسؤول لإدارة طلبات المتجر</p>
+
+      <div class="login-error" id="login-error"></div>
+
+      <form id="login-form">
+        <div class="login-field">
+          <label class="login-label" for="username">اسم المستخدم (Nom d'utilisateur)</label>
+          <input type="text" id="username" class="login-input" placeholder="admin" value="admin" required autofocus>
+        </div>
+
+        <div class="login-field">
+          <label class="login-label" for="password">كلمة المرور (Mot de passe)</label>
+          <input type="password" id="password" class="login-input" placeholder="••••••••" required>
+        </div>
+
+        <div class="login-hint">
+          🔑 <strong>بيانات الدخول المعتمدة:</strong><br>
+          • اسم المستخدم: <code>admin</code><br>
+          • كلمة المرور: <code>12345678</code>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <span>دخول للوحة الإدارة 🚀</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. ADMIN DASHBOARD APP -->
+  <div class="admin-app">
+    <!-- Navbar -->
+    <header class="admin-navbar">
+      <div class="nav-brand">
+        <div class="brand-icon">📦</div>
+        <div class="brand-text">
+          <h1>CELLU-CARE™ المغرب</h1>
+          <span>لوحة إدارة طلبات الدفع عند الاستلام (COD)</span>
+        </div>
+      </div>
+
+      <div class="nav-status">
+        <span class="pulse-dot"></span>
+        <span>مزامنة الطلبات حية ومباشرة</span>
+      </div>
+
+      <div class="nav-actions">
+        <a href="/" target="_blank" class="btn-nav" title="فتح صفحة هبوط الزبائن">
+          🛍️ زيارة المتجر
+        </a>
+        <button class="btn-nav" id="btn-refresh" title="تحديث يدوي للطلبات">
+          🔄 تحديث
+        </button>
+        <button class="btn-nav btn-export" id="btn-export" title="تصدير جميع الطلبات إلى ملف Excel / CSV لشركات التوصيل">
+          📥 تصدير Excel (CSV)
+        </button>
+        <button class="btn-nav btn-logout" id="btn-logout" title="تسجيل الخروج">
+          🚪 خروج
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      
+      <!-- KPI Stats Grid -->
+      <section class="stats-grid">
+        <div class="stat-card card-orders">
+          <div class="stat-info">
+            <p>إجمالي الطلبات (Total)</p>
+            <h3 id="stat-total-orders">0</h3>
+          </div>
+          <div class="stat-icon icon-orders">📦</div>
+        </div>
+
+        <div class="stat-card card-revenue">
+          <div class="stat-info">
+            <p>إجمالي المبيعات (Revenu MAD)</p>
+            <h3 id="stat-total-revenue">0 د.م</h3>
+          </div>
+          <div class="stat-icon icon-revenue">💵</div>
+        </div>
+
+        <div class="stat-card card-pending">
+          <div class="stat-info">
+            <p>في انتظار التأكيد (À confirmer)</p>
+            <h3 id="stat-pending-orders">0</h3>
+          </div>
+          <div class="stat-icon icon-pending">⏳</div>
+        </div>
+
+        <div class="stat-card card-confirmed">
+          <div class="stat-info">
+            <p>مؤكدة / قيد التوصيل (Actives)</p>
+            <h3 id="stat-confirmed-orders">0</h3>
+          </div>
+          <div class="stat-icon icon-confirmed">🚚</div>
+        </div>
+      </section>
+
+      <!-- Search & Status Tabs -->
+      <section class="controls-bar">
+        <div class="search-box">
+          <input type="text" id="search-orders" class="search-input" placeholder="🔍 بحث باسم الزبونة، الهاتف، أو المدينة...">
+        </div>
+
+        <div class="status-tabs">
+          <button class="status-tab active" data-status="all">
+            <span>الكل</span>
+            <span class="tab-badge" id="count-all">0</span>
+          </button>
+          <button class="status-tab" data-status="pending">
+            <span>🟡 في الانتظار</span>
+            <span class="tab-badge" id="count-pending">0</span>
+          </button>
+          <button class="status-tab" data-status="confirmed">
+            <span>🟢 تم التأكيد</span>
+            <span class="tab-badge" id="count-confirmed">0</span>
+          </button>
+          <button class="status-tab" data-status="shipped">
+            <span>🚚 قيد الشحن</span>
+            <span class="tab-badge" id="count-shipped">0</span>
+          </button>
+          <button class="status-tab" data-status="delivered">
+            <span>✅ تم التسليم</span>
+            <span class="tab-badge" id="count-delivered">0</span>
+          </button>
+          <button class="status-tab" data-status="cancelled">
+            <span>🔴 ملغاة</span>
+            <span class="tab-badge" id="count-cancelled">0</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Orders Table -->
+      <section class="table-card">
+        <div class="table-header">
+          <h2>قائمة الطلبات الواردة (Les Commandes)</h2>
+          <span style="font-size:0.85rem; color:var(--text-muted);">
+            تصل الطلبات هنا تلقائياً فور ملء الزبونة لاستمارة الشراء
+          </span>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>رقم الطلب</th>
+                <th>التاريخ والوقت</th>
+                <th>معلومات الزبونة والمدينة</th>
+                <th>رقم الهاتف والتواصل</th>
+                <th>العرض والمبلغ</th>
+                <th>حالة الطلب (Statut)</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <!-- Dynamically populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="admin-toast" id="admin-toast">
+    <span style="font-size:1.3rem;">🔔</span>
+    <span id="toast-message">تم تحديث البيانات بنجاح</span>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
